@@ -65,6 +65,7 @@ initDB();
 router.get('/', (req, res) => {
   res.send('Hello World!');
 });
+console.log("here");
 
 router.post('/webhook-orders', async (req, res) => {
     const shopify_order = req.body;
