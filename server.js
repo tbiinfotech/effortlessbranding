@@ -109,6 +109,7 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
     if (path.extname(req.file.originalname).toLowerCase() === ".png" || path.extname(req.file.originalname).toLowerCase() === ".jpg" || path.extname(req.file.originalname).toLowerCase() === ".jpeg") {
         const pages = [ tempPath ];
         try {
+            console.log(targetPath);
             await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
             res.send('/uploads/' + pdfFileName);
         } catch (error) {
