@@ -214,6 +214,7 @@ cron.schedule('*/2 * * * *', async () => {
 
     shopify.product.list(params).then(
         async (products) => {
+            console.log(products);
             //console.time('doSomething');
             if (products) {
                 let product = products[0];
