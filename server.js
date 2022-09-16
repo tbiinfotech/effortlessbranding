@@ -114,7 +114,8 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
             console.log('tempPath', tempPath);
             const result = await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
             console.log(result);
-            res.send('/uploads/' + pdfFileName);
+
+            res.send({'pdf_url': '/uploads/' + pdfFileName});
         } catch (error) {
             console.log(error);
             res.status(500).send(error);
