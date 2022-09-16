@@ -110,11 +110,7 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
     if (path.extname(req.file.originalname).toLowerCase() === ".png" || path.extname(req.file.originalname).toLowerCase() === ".jpg" || path.extname(req.file.originalname).toLowerCase() === ".jpeg") {
         const pages = [ tempPath ];
         try {
-            console.log(targetPath);
-            console.log('tempPath', tempPath);
             const result = await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-            console.log(result);
-
             res.send({'pdf_url': '/uploads/' + pdfFileName});
         } catch (error) {
             console.log(error);
@@ -123,7 +119,7 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
     } else if (path.extname(req.file.originalname).toLowerCase() === ".pdf") {
         try {
             await fs.copyFileSync(tempPath, targetPath);
-            res.send('/uploads/' + pdfFileName);
+            res.send({'pdf_url': '/uploads/' + pdfFileName});
         } catch (error) {
             console.log(error);
             res.status(500).send(error);
@@ -139,7 +135,7 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
             stream.on('finish', async () => {                
                 const pages = [ tempJpgImage ];
                 await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-                res.send('/uploads/' + pdfFileName);                
+                res.send({'pdf_url': '/uploads/' + pdfFileName});              
             });
         } catch (error) {
             console.log(error);
@@ -152,7 +148,7 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
          
             const pages = [ tempJpgImage ];
             await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-            res.send('/uploads/' + pdfFileName);
+            res.send({'pdf_url': '/uploads/' + pdfFileName});
         } catch (error) {
             console.log(error);
             res.status(500).send(error);
@@ -165,7 +161,7 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
             }).then( async () => {
                 const pages = [ tempPngImage ];
                 await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-                res.send('/uploads/' + pdfFileName);
+                res.send({'pdf_url': '/uploads/' + pdfFileName});
             });
         } catch (error) {
             console.log(error);
