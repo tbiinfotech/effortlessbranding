@@ -65,7 +65,6 @@ initDB();
 router.get('/', (req, res) => {
   res.send('Hello World!');
 });
-console.log("here");
 
 router.post('/webhook-orders', async (req, res) => {
     const shopify_order = req.body;
@@ -211,12 +210,12 @@ cron.schedule('*/2 * * * *', async () => {
     } else {        
         params = { fields: 'id,vendor,variants', limit: 1 };
     }
-
+console.log(params);
     shopify.product.list(params).then(
         async (products) => {
             console.log(products);
             //console.time('doSomething');
-            if (products) {
+            if (products && products.length) {
                 let product = products[0];
 
                 (updatedProductIds.UpdatedProductID !== null) ? updatedProductIds.LastUpdatedProductID = updatedProductIds.UpdatedProductID : updatedProductIds.LastUpdatedProductID = "";
