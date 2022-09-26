@@ -100,6 +100,14 @@ router.post('/webhook-orders', async (req, res) => {
     res.send('ok');
 });
 
+router.post('/webhook-carts', async (req, res) => {
+    const shopify_cart = req.body;
+
+    console.log(shopify_cart);
+    
+    res.send('ok');
+});
+
 router.post('/post-image', upload.single('file'), async function (req, res) {
     const tempPath = req.file.path;
     const pdfFileName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + ".pdf";
