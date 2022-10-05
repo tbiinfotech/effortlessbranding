@@ -212,7 +212,7 @@ function sleep(ms) {
     });
 }
 
-cron.schedule('*/2 * * * *', async () => {
+cron.schedule('* * */2 * *', async () => {
     console.log('Cron Started!!!');
     let params = { limit: 50 };
     // let updatedProductIds = await findUpdatedProductIds();
@@ -300,11 +300,12 @@ cron.schedule('*/2 * * * *', async () => {
                 
                             if (remote_products) {
                                 try {
-                                    updateProductFromSSActiveWear(product, remote_products, 0);
+                                    await updateProductFromSSActiveWear(product, remote_products, 0);
                                 } catch (error) {
                                     console.log(error);
                                 }
                             }
+                            await sleep(1000);
                         }
                     }
                     break;
