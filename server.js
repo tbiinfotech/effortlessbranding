@@ -270,13 +270,13 @@ cron.schedule('*/2 * * * *', async () => {
     // );	
     do {
         const products = await shopify.product.list(params);
+        let inventory_items = [];
+        let sku_arr = [];
+        let remote_products;
+
         products.forEach(async (product) => {
             switch (product.vendor) {
                 case 'S&S':
-                    let inventory_items = [];
-                    let sku_arr = [];
-                    let remote_products;
-
                     if(product.variants.length) {
                         product.variants.forEach(variant => {
                             if(variant.sku) {
@@ -290,25 +290,25 @@ cron.schedule('*/2 * * * *', async () => {
                             }
                         });
                     }
-
-                    console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-                    if(sku_arr.length) {
-                        try {
-                            remote_products = await getProductsFromSSActiveWear(sku_arr);
-                        } catch {
-                        }
-
-                        if (remote_products) {
-                            try {
-                                updateProductFromSSActiveWear(product, remote_products, 0);
-                            } catch (error) {
-                                console.log(error);
-                            }
-                        }
-                    }
                     break;
             }
         });
+
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        if(sku_arr.length) {
+            try {
+                remote_products = await getProductsFromSSActiveWear(sku_arr);
+            } catch {
+            }
+
+            if (remote_products) {
+                try {
+                    updateProductFromSSActiveWear(product, remote_products, 0);
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
 
         params = products.nextPageParameters;
         await sleep(2000);
