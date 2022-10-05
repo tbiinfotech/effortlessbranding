@@ -19,6 +19,12 @@ const shopify = new Shopify({
     accessToken: SHOPIFY_API_TOCKEN
 });
 
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
 const getProductsFromSSActiveWear = async (sku_arr) => {
     const skus_str = sku_arr.join(',');
     let products;
@@ -60,6 +66,7 @@ const updateProductFromSSActiveWear = async (product, remote_products, index) =>
     if ( product.variants[index] ) {
         let remote_product = remote_products.find(obj => obj.sku == product.variants[index].sku);
         let new_qty = (!remote_product) ? 0 : remote_product.qty;
+        await sleep(1000);
 
         if (new_qty != product.variants[index].inventory_quantity) {
             let variant_inventory;
