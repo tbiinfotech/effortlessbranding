@@ -269,14 +269,13 @@ cron.schedule('* * */2 * *', async () => {
     //     }
     // );	
     do {
-        const products = await shopify.product.list(params);
-        let inventory_items = [];
-        
+        const products = await shopify.product.list(params);        
 
         products.forEach(async (product) => {
             switch (product.vendor) {
                 case 'S&S':
                     if(product.variants.length) {
+                        let inventory_items = [];
                         let sku_arr = [];
                         let remote_products;
                         console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -300,7 +299,7 @@ cron.schedule('* * */2 * *', async () => {
                 
                             if (remote_products) {
                                 try {
-                                    await updateProductFromSSActiveWear(product, remote_products, 0);
+                                    await updateProductFromSSActiveWear(product, remote_products, inventory_items, 0);
                                 } catch (error) {
                                     console.log(error);
                                 }
