@@ -78,6 +78,9 @@ const updateProductFromSSActiveWear = async (product, remote_products, index) =>
             }
         }
 
+        console.log("Variant - " , product.variants[index].sku, " is updated.");
+        console.log("--------------------------------------");
+
         setTimeout(updateProductFromSSActiveWear, 1000, product, remote_products, ++index);
     }
 }

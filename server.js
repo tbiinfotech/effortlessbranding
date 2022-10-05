@@ -203,48 +203,101 @@ router.get('/order-test', async (req, res) => {
 app.use('/', router);
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`Example app listening at http://localhost:${port}`);
 });
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 cron.schedule('*/2 * * * *', async () => {
     console.log('Cron Started!!!');
-    let updatedProductIds = await findUpdatedProductIds();
-    let params = {};
-    if (!updatedProductIds) {
-        updatedProductIds = {};
-    }
+    let params = { limit: 50 };
+    // let updatedProductIds = await findUpdatedProductIds();
+    // let params = {};
+    // if (!updatedProductIds) {
+    //     updatedProductIds = {};
+    // }
 
-    if (updatedProductIds && (updatedProductIds.CurrentProductID != updatedProductIds.UpdatedProductID || updatedProductIds.CurrentProductID != updatedProductIds.LastUpdatedProductID)) {
-        params = { fields: 'id,vendor,variants', limit: 1, since_id: updatedProductIds.CurrentProductID };
-    } else {        
-        params = { fields: 'id,vendor,variants', limit: 1 };
-    }
+    // if (updatedProductIds && (updatedProductIds.CurrentProductID != updatedProductIds.UpdatedProductID || updatedProductIds.CurrentProductID != updatedProductIds.LastUpdatedProductID)) {
+    //     params = { fields: 'id,vendor,variants', limit: 1, since_id: updatedProductIds.CurrentProductID };
+    // } else {        
+    //     params = { fields: 'id,vendor,variants', limit: 1 };
+    // }
 
-    shopify.product.list(params).then(
-        async (products) => {
-            //console.time('doSomething');
-            if (products && products.length) {
-                let product = products[0];
+    // shopify.product.list(params).then(
+    //     async (products) => {
+    //         //console.time('doSomething');
+    //         if (products && products.length) {
+    //             let product = products[0];
 
-                (updatedProductIds.UpdatedProductID !== null) ? updatedProductIds.LastUpdatedProductID = updatedProductIds.UpdatedProductID : updatedProductIds.LastUpdatedProductID = "";
-                (updatedProductIds.CurrentProductID !== null) ? updatedProductIds.UpdatedProductID = updatedProductIds.CurrentProductID : updatedProductIds.UpdatedProductID = "";
-                updatedProductIds.CurrentProductID = product.id;
-                saveUpdatedProductIds(updatedProductIds);
+    //             (updatedProductIds.UpdatedProductID !== null) ? updatedProductIds.LastUpdatedProductID = updatedProductIds.UpdatedProductID : updatedProductIds.LastUpdatedProductID = "";
+    //             (updatedProductIds.CurrentProductID !== null) ? updatedProductIds.UpdatedProductID = updatedProductIds.CurrentProductID : updatedProductIds.UpdatedProductID = "";
+    //             updatedProductIds.CurrentProductID = product.id;
+    //             saveUpdatedProductIds(updatedProductIds);
 
-                switch (product.vendor) {
-                    case 'S&S':
-                        let sku_arr = [];
-                        let updated = false;
-                        let remote_products;
+    //             switch (product.vendor) {
+    //                 case 'S&S':
+    //                     let sku_arr = [];
+    //                     let updated = false;
+    //                     let remote_products;
 
-                        for (let index=0;index<product.variants.length;index++) {
-                            sku_arr.push(product.variants[index].sku);
-                        }
+    //                     for (let index=0;index<product.variants.length;index++) {
+    //                         sku_arr.push(product.variants[index].sku);
+    //                     }
 
+    //                     try {
+    //                         remote_products = await getProductsFromSSActiveWear(sku_arr);
+    //                     } catch {
+    //                     }
+    //                     if (remote_products) {
+    //                         try {
+    //                             updateProductFromSSActiveWear(product, remote_products, 0);
+    //                         } catch (error) {
+    //                             console.log(error);
+    //                         }
+    //                     }
+    //                     break;
+    //             }
+    //         }
+    //         //console.timeEnd('doSomething');
+    //     },
+    //     (err) => {
+    //         console.error(err);
+    //     }
+    // );	
+    do {
+        const products = await shopify.product.list(params);
+        products.forEach(async (product) => {
+            switch (product.vendor) {
+                case 'S&S':
+                    let inventory_items = [];
+                    let sku_arr = [];
+                    let remote_products;
+
+                    if(product.variants.length) {
+                        product.variants.forEach(variant => {
+                            if(variant.sku) {
+                                inventory_items.push({
+                                    sku: variant.sku,
+                                    variant_id: variant.id,
+                                    inventory_item_id: variant.inventory_item_id,
+                                    inventory_quantity: variant.inventory_quantity
+                                })
+                                sku_arr.push(variant.sku);
+                            }
+                        });
+                    }
+
+                    console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                    if(sku_arr.length) {
                         try {
                             remote_products = await getProductsFromSSActiveWear(sku_arr);
                         } catch {
                         }
+
                         if (remote_products) {
                             try {
                                 updateProductFromSSActiveWear(product, remote_products, 0);
@@ -252,13 +305,13 @@ cron.schedule('*/2 * * * *', async () => {
                                 console.log(error);
                             }
                         }
-                        break;
-                }
+                    }
+                    break;
             }
-            //console.timeEnd('doSomething');
-        },
-        (err) => {
-            console.error(err);
-        }
-    );	
+        });
+
+        params = products.nextPageParameters;
+        await sleep(2000);
+    } while (params !== undefined);
+    console.log('Cron Ended!!!');
 });
