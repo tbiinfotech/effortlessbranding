@@ -312,6 +312,7 @@ cron.schedule('0 */5 * * * *', async () => {
                 try {
                     await updateProductFromSSActiveWear(remote_products, inventory_items);
                 } catch (error) {
+                    console.log("aaaaaaaaaaaaaaaaa")
                     console.log(error);
                 }
             }
