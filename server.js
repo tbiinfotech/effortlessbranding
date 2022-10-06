@@ -212,7 +212,7 @@ function sleep(ms) {
     });
 }
 
-cron.schedule('0 0 */1 * *', async () => {
+cron.schedule('0 0 */1 * * *', async () => {
     console.log('Cron Started!!!');
     let params = { limit: 50 };
     // let updatedProductIds = await findUpdatedProductIds();
