@@ -131,9 +131,6 @@ const updateProductFromSSActiveWear = async (remote_products, inventory_items) =
 
         // console.log("Variant - " , product.variants[index].sku, " is updated.");
         // console.log("--------------------------------------");
-
-        setTimeout(updateProductFromSSActiveWear, 1000, product, remote_products, inventory_items, ++index);
-    }
 }
 
 module.exports = {getProductsFromSSActiveWear, postOrderToSSActiveWear, updateProductFromSSActiveWear};
