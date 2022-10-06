@@ -31,7 +31,7 @@ const getProductsFromSSActiveWear = async (sku_arr) => {
     try {
         const response = await axios({
             method: 'get',
-            url: `${SSACTIVEWEAR_GET_PRODUCT_API_URL}${skus_str}?${fields=Sku,Qty}`,
+            url: `${SSACTIVEWEAR_GET_PRODUCT_API_URL}${skus_str}?fields=Sku,Qty`,
             auth: {
                 username: SSACTIVEWEAR_ACCOUNT_NUMBER,
                 password: SSACTIVEWEAR_API_KEY
