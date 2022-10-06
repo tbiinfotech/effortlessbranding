@@ -80,7 +80,7 @@ const updateProductFromSSActiveWear = async (remote_products, inventory_items) =
                     location_id: levels[0].location_id
                 });
                 await sleep(500);
-                console.log("Variant - " , variant_sku, " is updated.");
+                console.log("Variant - " , inventoryItem.sku, " is updated.");
                 console.log("--------------------------------------");
             }
         }
