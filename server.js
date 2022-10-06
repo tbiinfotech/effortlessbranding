@@ -212,7 +212,7 @@ function sleep(ms) {
     });
 }
 
-cron.schedule('* * */2 * *', async () => {
+cron.schedule('0 0 */1 * *', async () => {
     console.log('Cron Started!!!');
     let params = { limit: 50 };
     // let updatedProductIds = await findUpdatedProductIds();
@@ -269,16 +269,17 @@ cron.schedule('* * */2 * *', async () => {
     //     }
     // );	
     do {
-        const products = await shopify.product.list(params);        
+        const products = await shopify.product.list(params);
+        let inventory_items = [];
+        let sku_arr = [];
+        let remote_products;
+
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
         products.forEach(async (product) => {
             switch (product.vendor) {
                 case 'S&S':
                     if(product.variants.length) {
-                        let inventory_items = [];
-                        let sku_arr = [];
-                        let remote_products;
-                        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
                         product.variants.forEach(variant => {
                             if(variant.sku) {
@@ -291,28 +292,35 @@ cron.schedule('* * */2 * *', async () => {
                                 sku_arr.push(variant.sku);
                             }
                         });
-                        if(sku_arr.length) {
-                            try {
-                                remote_products = await getProductsFromSSActiveWear(sku_arr);
-                            } catch {
-                            }
-                
-                            if (remote_products) {
-                                try {
-                                    await updateProductFromSSActiveWear(product, remote_products, inventory_items, 0);
-                                } catch (error) {
-                                    console.log(error);
-                                }
-                            }
-                            await sleep(1000);
-                        }
                     }
                     break;
             }
         });
+        await sleep(500);
+        console.log(sku_arr);
+        console.log('---------------------');
+        console.log(inventory_items);
+
+        if(sku_arr.length) {
+            try {
+                remote_products = await getProductsFromSSActiveWear(sku_arr);
+                console.log('---------------------');
+                console.log(remote_products);
+            } catch {
+            }
+
+            if (remote_products) {
+                try {
+                    await updateProductFromSSActiveWear(remote_products, inventory_items);
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            await sleep(500);
+        }
 
         params = products.nextPageParameters;
-        await sleep(2000);
+        await sleep(500);
     } while (params !== undefined);
     console.log('Cron Ended!!!');
 });

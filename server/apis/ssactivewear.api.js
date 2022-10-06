@@ -62,34 +62,55 @@ const postOrderToSSActiveWear = async (order) => {
     }
 }
 
-const updateProductFromSSActiveWear = async (product, remote_products, inventory_items, index) => {
-    if ( product.variants[index] ) {
-        let remote_product = remote_products.find(obj => obj.sku == product.variants[index].sku);
+const updateProductFromSSActiveWear = async (remote_products, inventory_items) => {
+    inventory_items.forEach(async (inventoryItem) => {
+        let remote_product = remote_products.find(product => product.sku === inventoryItem.sku);
         let new_qty = (!remote_product) ? 0 : remote_product.qty;
-        let inventory_item = inventory_items.find(x => x.sku === product.variants[index].sku);
-        await sleep(1000);
-        if(inventory_item && inventory_item.inventory_item_id) {
-            // inventory = await shopify.inventoryItem.get(inventory_item.inventory_item_id);
-            if(inventory_item.inventory_quantity != new_qty) {
-                let params = {
-                    limit: 50,
-                    inventory_item_ids: inventory_item.inventory_item_id
-                };
-                const levels = await shopify.inventoryLevel.list(params);
+        const levels = await shopify.inventoryLevel.list({
+            limit: 50,
+            inventory_item_ids: inventoryItem.inventory_item_id
+        });
+        await sleep(500);
+        if(levels.length) {
+            if(levels[0]["available"] !== undefined && levels[0]["location_id"] !== undefined) {
+                await shopify.inventoryLevel.adjust({
+                    available_adjustment: (new_qty - levels[0].available),
+                    inventory_item_id: inventoryItem.inventory_item_id,
+                    location_id: levels[0].location_id
+                });
                 await sleep(500);
-                if(levels.length) {
-                    if(levels[0]["available"] !== undefined && levels[0]["location_id"] !== undefined) {
-                        await shopify.inventoryLevel.adjust({
-                            available_adjustment: (qty - levels[0].available),
-                            inventory_item_id: inventory_item.inventory_item_id,
-                            location_id: levels[0].location_id
-                        });
-                        console.log("Variant - " , variant_sku, " is updated.");
-                        console.log("--------------------------------------");
-                    }
-                }
+                console.log("Variant - " , variant_sku, " is updated.");
+                console.log("--------------------------------------");
             }
         }
+    });
+    // if ( product.variants[index] ) {
+    //     let remote_product = remote_products.find(obj => obj.sku == product.variants[index].sku);
+    //     let new_qty = (!remote_product) ? 0 : remote_product.qty;
+    //     let inventory_item = inventory_items.find(x => x.sku === product.variants[index].sku);
+    //     await sleep(1000);
+    //     if(inventory_item && inventory_item.inventory_item_id) {
+    //         // inventory = await shopify.inventoryItem.get(inventory_item.inventory_item_id);
+    //         if(inventory_item.inventory_quantity != new_qty) {
+    //             let params = {
+    //                 limit: 50,
+    //                 inventory_item_ids: inventory_item.inventory_item_id
+    //             };
+    //             const levels = await shopify.inventoryLevel.list(params);
+    //             await sleep(500);
+    //             if(levels.length) {
+    //                 if(levels[0]["available"] !== undefined && levels[0]["location_id"] !== undefined) {
+    //                     await shopify.inventoryLevel.adjust({
+    //                         available_adjustment: (qty - levels[0].available),
+    //                         inventory_item_id: inventory_item.inventory_item_id,
+    //                         location_id: levels[0].location_id
+    //                     });
+    //                     console.log("Variant - " , variant_sku, " is updated.");
+    //                     console.log("--------------------------------------");
+    //                 }
+    //             }
+    //         }
+    //     }
 
         // if (new_qty != product.variants[index].inventory_quantity) {
         //     let variant_inventory;
