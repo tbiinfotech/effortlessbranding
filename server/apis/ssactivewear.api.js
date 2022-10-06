@@ -64,25 +64,32 @@ const postOrderToSSActiveWear = async (order) => {
 
 const updateProductFromSSActiveWear = async (remote_products, inventory_items) => {
     inventory_items.forEach(async (inventoryItem) => {
-        let remote_product = remote_products.find(product => product.sku === inventoryItem.sku);
-        let new_qty = (!remote_product) ? 0 : remote_product.qty;
-        await sleep(500);
-        const levels = await shopify.inventoryLevel.list({
-            limit: 50,
-            inventory_item_ids: inventoryItem.inventory_item_id
-        });
-        await sleep(500);
-        if(levels.length) {
-            if(levels[0]["available"] !== undefined && levels[0]["location_id"] !== undefined) {
-                await shopify.inventoryLevel.adjust({
-                    available_adjustment: (new_qty - levels[0].available),
-                    inventory_item_id: inventoryItem.inventory_item_id,
-                    location_id: levels[0].location_id
-                });
-                await sleep(500);
-                console.log("Variant - " , inventoryItem.sku, " is updated.");
-                console.log("--------------------------------------");
+        try {
+            let remote_product = remote_products.find(product => product.sku === inventoryItem.sku);
+            let new_qty = (!remote_product) ? 0 : remote_product.qty;
+            await sleep(500);
+            const levels = await shopify.inventoryLevel.list({
+                limit: 50,
+                inventory_item_ids: inventoryItem.inventory_item_id
+            });
+            await sleep(500);
+            if(levels.length) {
+                if(levels[0]["available"] !== undefined && levels[0]["location_id"] !== undefined) {
+                    await shopify.inventoryLevel.adjust({
+                        available_adjustment: (new_qty - levels[0].available),
+                        inventory_item_id: inventoryItem.inventory_item_id,
+                        location_id: levels[0].location_id
+                    });
+                    await sleep(500);
+                    console.log("Variant - " , inventoryItem.sku, " is updated.");
+                    console.log("--------------------------------------");
+                }
             }
+        } catch (e) {
+            console.log('error--------------------error------------')
+            console.log(e);
+        } finally {
+            console.log('--------------final--------------');
         }
     });
     // if ( product.variants[index] ) {

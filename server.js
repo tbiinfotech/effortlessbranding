@@ -309,12 +309,12 @@ cron.schedule('0 */5 * * * *', async () => {
             }
 
             if (remote_products) {
-                try {
+                // try {
                     await updateProductFromSSActiveWear(remote_products, inventory_items);
-                } catch (error) {
-                    console.log("aaaaaaaaaaaaaaaaa")
-                    console.log(error);
-                }
+                // } catch (error) {
+                    // console.log("aaaaaaaaaaaaaaaaa")
+                    // console.log(error);
+                // }
             }
             await sleep(500);
         }
