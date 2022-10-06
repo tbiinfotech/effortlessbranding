@@ -31,7 +31,7 @@ const getProductsFromSSActiveWear = async (sku_arr) => {
     try {
         const response = await axios({
             method: 'get',
-            url: `${SSACTIVEWEAR_GET_PRODUCT_API_URL}${skus_str}`,
+            url: `${SSACTIVEWEAR_GET_PRODUCT_API_URL}${skus_str}?${fields=Sku,Qty}`,
             auth: {
                 username: SSACTIVEWEAR_ACCOUNT_NUMBER,
                 password: SSACTIVEWEAR_API_KEY
@@ -66,6 +66,7 @@ const updateProductFromSSActiveWear = async (remote_products, inventory_items) =
     inventory_items.forEach(async (inventoryItem) => {
         let remote_product = remote_products.find(product => product.sku === inventoryItem.sku);
         let new_qty = (!remote_product) ? 0 : remote_product.qty;
+        await sleep(500);
         const levels = await shopify.inventoryLevel.list({
             limit: 50,
             inventory_item_ids: inventoryItem.inventory_item_id
