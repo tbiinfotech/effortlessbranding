@@ -206,68 +206,13 @@ app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
 });
 
-function sleep(ms) {
+async function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 }
-
-cron.schedule('0 */5 * * * *', async () => {
-    console.log('Cron Started!!!');
+router.get('/inventory-synchronize', async (req, res) => {
     let params = { fields: 'id,vendor,variants', limit: 1 };
-    // let updatedProductIds = await findUpdatedProductIds();
-    // let params = {};
-    // if (!updatedProductIds) {
-    //     updatedProductIds = {};
-    // }
-
-    // if (updatedProductIds && (updatedProductIds.CurrentProductID != updatedProductIds.UpdatedProductID || updatedProductIds.CurrentProductID != updatedProductIds.LastUpdatedProductID)) {
-    //     params = { fields: 'id,vendor,variants', limit: 1, since_id: updatedProductIds.CurrentProductID };
-    // } else {        
-    //     params = { fields: 'id,vendor,variants', limit: 1 };
-    // }
-
-    // shopify.product.list(params).then(
-    //     async (products) => {
-    //         //console.time('doSomething');
-    //         if (products && products.length) {
-    //             let product = products[0];
-
-    //             (updatedProductIds.UpdatedProductID !== null) ? updatedProductIds.LastUpdatedProductID = updatedProductIds.UpdatedProductID : updatedProductIds.LastUpdatedProductID = "";
-    //             (updatedProductIds.CurrentProductID !== null) ? updatedProductIds.UpdatedProductID = updatedProductIds.CurrentProductID : updatedProductIds.UpdatedProductID = "";
-    //             updatedProductIds.CurrentProductID = product.id;
-    //             saveUpdatedProductIds(updatedProductIds);
-
-    //             switch (product.vendor) {
-    //                 case 'S&S':
-    //                     let sku_arr = [];
-    //                     let updated = false;
-    //                     let remote_products;
-
-    //                     for (let index=0;index<product.variants.length;index++) {
-    //                         sku_arr.push(product.variants[index].sku);
-    //                     }
-
-    //                     try {
-    //                         remote_products = await getProductsFromSSActiveWear(sku_arr);
-    //                     } catch {
-    //                     }
-    //                     if (remote_products) {
-    //                         try {
-    //                             updateProductFromSSActiveWear(product, remote_products, 0);
-    //                         } catch (error) {
-    //                             console.log(error);
-    //                         }
-    //                     }
-    //                     break;
-    //             }
-    //         }
-    //         //console.timeEnd('doSomething');
-    //     },
-    //     (err) => {
-    //         console.error(err);
-    //     }
-    // );	
     do {
         const products = await shopify.product.list(params);
         let inventory_items = [];
@@ -296,31 +241,70 @@ cron.schedule('0 */5 * * * *', async () => {
                     break;
             }
         });
-        await sleep(500);
-        console.log(sku_arr);
-        console.log('---------------------');
+        await sleep(1000);
 
         if(sku_arr.length) {
             try {
                 remote_products = await getProductsFromSSActiveWear(sku_arr);
-                console.log('---------------------');
-                console.log(remote_products);
             } catch {
             }
 
             if (remote_products) {
-                // try {
-                    await updateProductFromSSActiveWear(remote_products, inventory_items);
-                // } catch (error) {
-                    // console.log("aaaaaaaaaaaaaaaaa")
-                    // console.log(error);
-                // }
+                await updateProductFromSSActiveWear(remote_products, inventory_items);
             }
-            await sleep(500);
         }
 
         params = products.nextPageParameters;
-        await sleep(500);
+        await sleep(1000);
+    } while (params !== undefined);
+});
+
+cron.schedule('0 0 */2 * * *', async () => {
+    console.log('Cron Started!!!');
+    let params = { fields: 'id,vendor,variants', limit: 1 };
+    do {
+        const products = await shopify.product.list(params);
+        let inventory_items = [];
+        let sku_arr = [];
+        let remote_products;
+
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+        products.forEach(async (product) => {
+            switch (product.vendor) {
+                case 'S&S':
+                    if(product.variants.length) {
+
+                        product.variants.forEach(variant => {
+                            if(variant.sku) {
+                                inventory_items.push({
+                                    sku: variant.sku,
+                                    variant_id: variant.id,
+                                    inventory_item_id: variant.inventory_item_id,
+                                    inventory_quantity: variant.inventory_quantity
+                                })
+                                sku_arr.push(variant.sku);
+                            }
+                        });
+                    }
+                    break;
+            }
+        });
+        await sleep(1000);
+
+        if(sku_arr.length) {
+            try {
+                remote_products = await getProductsFromSSActiveWear(sku_arr);
+            } catch {
+            }
+
+            if (remote_products) {
+                await updateProductFromSSActiveWear(remote_products, inventory_items);
+            }
+        }
+
+        params = products.nextPageParameters;
+        await sleep(1000);
     } while (params !== undefined);
     console.log('Cron Ended!!!');
 });

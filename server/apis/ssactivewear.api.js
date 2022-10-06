@@ -19,10 +19,19 @@ const shopify = new Shopify({
     accessToken: SHOPIFY_API_TOCKEN
 });
 
-function sleep(ms) {
+async function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+}
+
+const delay = async (ms) => {
+    const date = Date.now();
+    let currentDate = null;
+ 
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < ms);
 }
 
 const getProductsFromSSActiveWear = async (sku_arr) => {
@@ -63,16 +72,16 @@ const postOrderToSSActiveWear = async (order) => {
 }
 
 const updateProductFromSSActiveWear = async (remote_products, inventory_items) => {
-    inventory_items.forEach(async (inventoryItem) => {
+    for (let index = 0; index < inventory_items.length; index++) {
+        let inventoryItem =  inventory_items[index];
         try {
             let remote_product = remote_products.find(product => product.sku === inventoryItem.sku);
             let new_qty = (!remote_product) ? 0 : remote_product.qty;
-            await sleep(500);
             const levels = await shopify.inventoryLevel.list({
                 limit: 50,
                 inventory_item_ids: inventoryItem.inventory_item_id
             });
-            await sleep(500);
+            await delay(1000);
             if(levels.length) {
                 if(levels[0]["available"] !== undefined && levels[0]["location_id"] !== undefined) {
                     await shopify.inventoryLevel.adjust({
@@ -80,18 +89,16 @@ const updateProductFromSSActiveWear = async (remote_products, inventory_items) =
                         inventory_item_id: inventoryItem.inventory_item_id,
                         location_id: levels[0].location_id
                     });
-                    await sleep(500);
+                    await delay(1000);
                     console.log("Variant - " , inventoryItem.sku, " is updated.");
-                    console.log("--------------------------------------");
                 }
             }
         } catch (e) {
-            console.log('error--------------------error------------')
             console.log(e);
         } finally {
-            console.log('--------------final--------------');
+            console.log("--------------------------------------");
         }
-    });
+    }
     // if ( product.variants[index] ) {
     //     let remote_product = remote_products.find(obj => obj.sku == product.variants[index].sku);
     //     let new_qty = (!remote_product) ? 0 : remote_product.qty;
