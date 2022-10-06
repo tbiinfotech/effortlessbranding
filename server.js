@@ -212,9 +212,9 @@ function sleep(ms) {
     });
 }
 
-cron.schedule('0 0 */1 * * *', async () => {
+cron.schedule('0 */5 * * * *', async () => {
     console.log('Cron Started!!!');
-    let params = { limit: 50 };
+    let params = { fields: 'id,vendor,variants', limit: 1 };
     // let updatedProductIds = await findUpdatedProductIds();
     // let params = {};
     // if (!updatedProductIds) {
@@ -299,7 +299,6 @@ cron.schedule('0 0 */1 * * *', async () => {
         await sleep(500);
         console.log(sku_arr);
         console.log('---------------------');
-        console.log(inventory_items);
 
         if(sku_arr.length) {
             try {
