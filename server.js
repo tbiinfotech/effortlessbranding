@@ -61,7 +61,7 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-initDB();
+// initDB();
 
 router.get('/', (req, res) => {
   res.send('Hello World!');
