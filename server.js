@@ -259,7 +259,7 @@ router.get('/inventory-synchronize', async (req, res) => {
     } while (params !== undefined);
 });
 
-cron.schedule('0 0 */2 * * *', async () => {
+cron.schedule('0 0 0 */1 * *', async () => {
     console.log('Cron Started!!!');
     let params = { fields: 'id,vendor,variants', limit: 1 };
     do {
