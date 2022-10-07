@@ -214,15 +214,6 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
     }
 });
 
-// router.get('/webhook-orders', async (req, res) => {
-//     if (SSACTIVEWEAR_API_MODE == 'TEST') {
-//         console.log(true);
-//     } else {
-//         console.log(false);
-//     }
-//     res.send('ok');
-// });
-
 router.get('/order-test', async (req, res) => {
     res.send('OK');
 });

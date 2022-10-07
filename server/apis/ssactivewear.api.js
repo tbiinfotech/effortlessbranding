@@ -99,53 +99,6 @@ const updateProductFromSSActiveWear = async (remote_products, inventory_items) =
             console.log("--------------------------------------");
         }
     }
-    // if ( product.variants[index] ) {
-    //     let remote_product = remote_products.find(obj => obj.sku == product.variants[index].sku);
-    //     let new_qty = (!remote_product) ? 0 : remote_product.qty;
-    //     let inventory_item = inventory_items.find(x => x.sku === product.variants[index].sku);
-    //     await sleep(1000);
-    //     if(inventory_item && inventory_item.inventory_item_id) {
-    //         // inventory = await shopify.inventoryItem.get(inventory_item.inventory_item_id);
-    //         if(inventory_item.inventory_quantity != new_qty) {
-    //             let params = {
-    //                 limit: 50,
-    //                 inventory_item_ids: inventory_item.inventory_item_id
-    //             };
-    //             const levels = await shopify.inventoryLevel.list(params);
-    //             await sleep(500);
-    //             if(levels.length) {
-    //                 if(levels[0]["available"] !== undefined && levels[0]["location_id"] !== undefined) {
-    //                     await shopify.inventoryLevel.adjust({
-    //                         available_adjustment: (qty - levels[0].available),
-    //                         inventory_item_id: inventory_item.inventory_item_id,
-    //                         location_id: levels[0].location_id
-    //                     });
-    //                     console.log("Variant - " , variant_sku, " is updated.");
-    //                     console.log("--------------------------------------");
-    //                 }
-    //             }
-    //         }
-    //     }
-
-        // if (new_qty != product.variants[index].inventory_quantity) {
-        //     let variant_inventory;
-        //     variant_inventory = await findVariantInventory(product.variants[index].id);
-            
-        //     if (variant_inventory) {
-        //         await shopify.inventoryLevel.set({location_id: variant_inventory.LocationId, inventory_item_id: variant_inventory.InventoryItemId, available: new_qty});
-        //     } else {
-        //         let inventory_item_id = product.variants[index].inventory_item_id;
-        //         let inventory_level = await shopify.inventoryLevel.list({inventory_item_ids: inventory_item_id});
-        //         if (inventory_level) {
-        //             let location_id = inventory_level[0].location_id;
-        //             // await saveVariantInventory({VariantID: product.variants[index].id, InventoryItemId: inventory_item_id, LocationId: location_id});
-        //             shopify.inventoryLevel.set({location_id: location_id, inventory_item_id: inventory_item_id, available: new_qty});
-        //         }
-        //     }
-        // }
-
-        // console.log("Variant - " , product.variants[index].sku, " is updated.");
-        // console.log("--------------------------------------");
 }
 
 module.exports = {getProductsFromSSActiveWear, postOrderToSSActiveWear, updateProductFromSSActiveWear};
