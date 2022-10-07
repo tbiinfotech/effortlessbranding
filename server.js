@@ -110,8 +110,10 @@ router.post('/webhook-carts', async (req, res) => {
 
 router.post('/post-image', upload.single('file'), async function (req, res) {
     const tempPath = req.file.path;
-    const pdfFileName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + ".pdf";
+    const targetFileName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const pdfFileName = targetFileName + ".pdf";
     const targetPath = path.join(__dirname, "./uploads/" + pdfFileName);
+    let targetImagePath;
     const tempJpgImage = './uploads/temp.jpg';
     const tempPngImage = './uploads/temp.png';
     
@@ -119,7 +121,13 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
         const pages = [ tempPath ];
         try {
             const result = await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-            res.send({'pdf_url': '/uploads/' + pdfFileName});
+            targetImagePath = path.join(__dirname, "./uploads/" + targetFileName + path.extname(req.file.originalname).toLowerCase());
+            await fs.copyFile(tempPath, targetImagePath, (err) => {
+                if(err) {
+                    console.log("Error Found: ", err);
+                }
+            });
+            res.send({'pdf_url': '/uploads/' + pdfFileName, 'img_url': '/uploads/' + targetFileName + path.extname(req.file.originalname).toLowerCase()});
         } catch (error) {
             console.log(error);
             res.status(500).send(error);
@@ -142,8 +150,14 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
             const stream = await frameData[0].getImage().pipe(fs.createWriteStream(tempJpgImage));
             stream.on('finish', async () => {                
                 const pages = [ tempJpgImage ];
+                targetImagePath = path.join(__dirname, "./uploads/" + targetFileName + '.jpg');
+                await fs.copyFile(tempJpgImage, targetImagePath, (err) => {
+                    if(err) {
+                        console.log("Error Found: ", err);
+                    }
+                });
                 await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-                res.send({'pdf_url': '/uploads/' + pdfFileName});              
+                res.send({'pdf_url': '/uploads/' + pdfFileName, 'img_url': '/uploads/' + targetFileName + '.jpg'});              
             });
         } catch (error) {
             console.log(error);
@@ -153,10 +167,17 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
         try {
             const bmpImage = await Jimp.read(tempPath);            
             await bmpImage.write(tempJpgImage);
+
+            targetImagePath = path.join(__dirname, "./uploads/" + targetFileName + '.jpg');
+            await fs.copyFile(tempJpgImage, targetImagePath, (err) => {
+                if(err) {
+                    console.log("Error Found: ", err);
+                }
+            });
          
             const pages = [ tempJpgImage ];
             await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-            res.send({'pdf_url': '/uploads/' + pdfFileName});
+            res.send({'pdf_url': '/uploads/' + pdfFileName, 'img_url': '/uploads/' + targetFileName + '.jpg'});
         } catch (error) {
             console.log(error);
             res.status(500).send(error);
@@ -168,8 +189,14 @@ router.post('/post-image', upload.single('file'), async function (req, res) {
                 return psd.image.saveAsPng(tempPngImage);
             }).then( async () => {
                 const pages = [ tempPngImage ];
+                targetImagePath = path.join(__dirname, "./uploads/" + targetFileName + '.png');
+                await fs.copyFile(tempPngImage, targetImagePath, (err) => {
+                    if(err) {
+                        console.log("Error Found: ", err);
+                    }
+                });
                 await imgToPDF(pages, 'A4').pipe(fs.createWriteStream(targetPath));
-                res.send({'pdf_url': '/uploads/' + pdfFileName});
+                res.send({'pdf_url': '/uploads/' + pdfFileName, 'img_url': '/uploads/' + targetFileName + '.png'});
             });
         } catch (error) {
             console.log(error);
