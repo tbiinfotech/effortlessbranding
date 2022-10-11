@@ -137,6 +137,7 @@ router.post('/webhook-carts', async (req, res) => {
                 }
             }
             if(discount_price > 0) {
+                console.log(discount_price);
                 await shopify.priceRule.create({
                     "price_rule": {
                         "title": `CreateOrderDiscount - ${ item.properties['_Create Order'] }`,
