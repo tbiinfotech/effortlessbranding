@@ -104,7 +104,9 @@ router.post('/webhook-carts', async (req, res) => {
     const shopify_cart = req.body;
     let products_list = [];
     let cart_price = 0.0;
+    let discount_price = 0.0;
     shopify_cart.line_items.forEach(item => {
+        console.log(item.properties);
         cart_price += parseFloat(item.price);
         products_list.push(item.variant_id);
     });
