@@ -102,16 +102,42 @@ router.post('/webhook-orders', async (req, res) => {
 
 router.post('/webhook-carts', async (req, res) => {
     const shopify_cart = req.body;
+    const quantity_split_edges = [1, 24, 48, 96, 144, 288, 500, 1000, 2500, 5000];
+    const priceTable = [
+        [2.9, 4.4, 5.85, 7],
+        [2.15, 2.65, 3.35, 3.95, 4.95, 5.45, 6.15],
+        [1.6, 2.2, 2.8, 3.4, 4, 4.6, 5.2],
+        [1.25, 1.55, 1.85, 2.1, 2.4, 2.7, 3, 3.3],
+        [1.1, 1.35, 1.6, 1.9, 2.15, 2.4, 3.5, 4.1],
+        [0.9, 1.15, 1.25, 1.4, 1.6, 1.8, 2.08, 2.35],
+        [0.8, 0.88, 0.96, 1.08, 1.18, 1.38, 1.52, 1.68],
+        [0.7, 0.76, 0.85, 0.95, 1.05, 1.2, 1.35, 1.5],
+        [0.62, 0.7, 0.78, 0.85, 0.95, 1.05, 1.2, 1.3],
+        [0.55, 0.6, 0.68, 0.75, 0.85, 0.95, 1.05, 1.15]
+    ];
     let products_list = [];
-    let cart_price = 0.0;
     let discount_price = 0.0;
+
     shopify_cart.line_items.forEach(item => {
-        console.log(item.properties);
-        cart_price += parseFloat(item.price);
-        products_list.push(item.variant_id);
+        if(item.properties && item.properties['_Create Order']) {
+            for (const [key, value] of Object.entries(item.properties)) {
+                if(key.includes(' Color')) {
+                    const colors_index = parseInt(value.replace(" Colors", "")) - 1;
+                    let quantiy_index = 0;
+
+                    quantity_split_edges.forEach((edge, index) => {
+                        if(item.quantity >= edge) quantiy_index = index;
+                    });
+                    if(priceTable[quantiy_index][colors_index]) {
+                        const orderProductPrice = priceTable[quantiy_index][colors_index];
+                        discount_price += (parseFloat(item.line_price) + orderProductPrice * item.quantity) * 0.4
+                    }
+                }
+            }
+        }
     });
     
-    console.log(cart_price, products_list.join(","));
+    console.log(discount_price, products_list.join(","));
     
     res.send('ok');
 });
