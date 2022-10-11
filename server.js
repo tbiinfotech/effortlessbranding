@@ -115,11 +115,11 @@ router.post('/webhook-carts', async (req, res) => {
         [0.62, 0.7, 0.78, 0.85, 0.95, 1.05, 1.2, 1.3],
         [0.55, 0.6, 0.68, 0.75, 0.85, 0.95, 1.05, 1.15]
     ];
-    let products_list = [];
 
     for(let i = 0; i < shopify_cart.line_items.length; i++) {
         const item = shopify_cart.line_items[i];
         if(item.properties && item.properties['_Create Order']) {
+            let products_list = [];
             let discounted_price = 0.0;
             let item_price = 0.0;
             for (const [key, value] of Object.entries(item.properties)) {
