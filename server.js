@@ -118,7 +118,8 @@ router.post('/webhook-carts', async (req, res) => {
     let products_list = [];
     let discount_price = 0.0;
 
-    shopify_cart.line_items.forEach(item => {
+    for(let i = 0; i < shopify_cart.line_items.length; i++) {
+        const item = shopify_cart.line_items[i];
         if(item.properties && item.properties['_Create Order']) {
             for (const [key, value] of Object.entries(item.properties)) {
                 if(key.includes(' Color')) {
@@ -130,15 +131,27 @@ router.post('/webhook-carts', async (req, res) => {
                     });
                     if(priceTable[quantiy_index][colors_index]) {
                         const orderProductPrice = priceTable[quantiy_index][colors_index];
-                        discount_price += (parseFloat(item.line_price) + orderProductPrice * item.quantity) * 0.4
+                        discount_price += (parseFloat(item.line_price) + orderProductPrice * item.quantity) * 0.4;
+                        products_list.push(item.variant_id);
                     }
                 }
             }
+            if(discount_price > 0) {
+                await shopify.priceRule.create({
+                    "title": `CreateOrderDiscount - ${ item.properties['_Create Order'] }`,
+                    "target_type": "line_item",
+                    "target_selection": "entitled",
+                    "allocation_method": "across",
+                    "value_type": "fixed_amount",
+                    "value": `${ parseFloat(0.0 - discount_price).toFixed(2) }`,
+                    "customer_selection": "all",
+                    "entitled_variant_ids": products_list,
+                });
+            }
         }
-    });
+    }
     
     console.log(discount_price, products_list.join(","));
-    
     res.send('ok');
 });
 
