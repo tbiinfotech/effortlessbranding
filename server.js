@@ -138,18 +138,27 @@ router.post('/webhook-carts', async (req, res) => {
             }
             if(discount_price > 0) {
                 console.log(discount_price);
+                console.log({
+                    "title": `CreateOrderDiscount - ${ item.properties['_Create Order'] }`,
+                    "target_type": "line_item",
+                    "target_selection": "entitled",
+                    "allocation_method": "across",
+                    "value_type": "fixed_amount",
+                    "value": `${ parseFloat(0.0 - discount_price).toFixed(2) }`,
+                    "customer_selection": "all",
+                    "entitled_variant_ids": products_list,
+                    "starts_at": new Date().toISOString()
+                });
                 await shopify.priceRule.create({
-                    "price_rule": {
-                        "title": `CreateOrderDiscount - ${ item.properties['_Create Order'] }`,
-                        "target_type": "line_item",
-                        "target_selection": "entitled",
-                        "allocation_method": "across",
-                        "value_type": "fixed_amount",
-                        "value": `${ parseFloat(0.0 - discount_price).toFixed(2) }`,
-                        "customer_selection": "all",
-                        "entitled_variant_ids": products_list,
-                        "starts_at": new Date().toISOString()
-                    }
+                    "title": `CreateOrderDiscount - ${ item.properties['_Create Order'] }`,
+                    "target_type": "line_item",
+                    "target_selection": "entitled",
+                    "allocation_method": "across",
+                    "value_type": "fixed_amount",
+                    "value": `${ parseFloat(0.0 - discount_price).toFixed(2) }`,
+                    "customer_selection": "all",
+                    "entitled_variant_ids": products_list,
+                    "starts_at": new Date().toISOString()
                 });
             }
         }
