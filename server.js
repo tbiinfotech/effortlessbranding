@@ -144,9 +144,9 @@ router.post('/webhook-carts', async (req, res) => {
         }
     }
 
-    const discount_price = (item_price + cart_price) * 0.4 - item_price;
+    const discount_price = 0.0 - ((item_price + cart_price) * 0.4 - item_price);
+    console.log(cart_price, item_price, discount_price);
     if(cart_price > discount_price) {
-        console.log(item_price, discount_price);
         console.log({
             "title": discount_title,
             "target_type": "line_item",
