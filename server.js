@@ -119,10 +119,12 @@ router.post('/webhook-carts', async (req, res) => {
     let products_list = [];
     let item_price = 0.0;
     let cart_price = 0.0;
+    let discount_title;
 
     for(let i = 0; i < shopify_cart.line_items.length; i++) {
         const item = shopify_cart.line_items[i];
         if(item.properties && item.properties['_Create Order']) {
+            discount_title = `CreateOrderDiscount - ${ item.properties['_Create Order'] }`;
             for (const [key, value] of Object.entries(item.properties)) {
                 if(key.includes(' Color')) {
                     const colors_index = parseInt(value.replace(" Colors", "")) - 1;
@@ -146,7 +148,7 @@ router.post('/webhook-carts', async (req, res) => {
     if(cart_price > discount_price) {
         console.log(item_price, discount_price);
         console.log({
-            "title": `CreateOrderDiscount - ${ item.properties['_Create Order'] }`,
+            "title": discount_title,
             "target_type": "line_item",
             "target_selection": "entitled",
             "allocation_method": "across",
@@ -157,7 +159,7 @@ router.post('/webhook-carts', async (req, res) => {
             "starts_at": shopify_cart.updated_at
         });
         const discountCode = await shopify.priceRule.create({
-            "title": `CreateOrderDiscount - ${ item.properties['_Create Order'] }`,
+            "title": discount_title,
             "target_type": "line_item",
             "target_selection": "entitled",
             "allocation_method": "across",
