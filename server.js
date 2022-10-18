@@ -157,7 +157,6 @@ router.post('/webhook-carts', async (req, res) => {
         const discount = await shopify.discountCode.create(priceRule.id, {
             code: discount_title
         });
-        
     // }
 
     res.send('ok');
