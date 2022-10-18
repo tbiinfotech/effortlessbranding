@@ -141,17 +141,6 @@ router.post('/webhook-carts', async (req, res) => {
 
     const discount_price = 0.0 - cart_price * 0.4;
     // if(cart_price > discount_price) {
-        console.log({
-            "title": discount_title,
-            "target_type": "line_item",
-            "target_selection": "entitled",
-            "allocation_method": "across",
-            "value_type": "fixed_amount",
-            "value": `${ parseFloat(discount_price).toFixed(2) }`,
-            "customer_selection": "all",
-            "entitled_variant_ids": products_list,
-            "starts_at": shopify_cart.updated_at
-        });
         const priceRule = await shopify.priceRule.create({
             "title": discount_title,
             "target_type": "line_item",
@@ -165,6 +154,7 @@ router.post('/webhook-carts', async (req, res) => {
         });
         console.log(priceRule);
         await sleep(1000);
+        const discount = await shopify.discountCodeCreationJob.create(priceRule.id);
     // }
 
     res.send('ok');
