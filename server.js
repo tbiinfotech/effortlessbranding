@@ -107,40 +107,23 @@ router.post('/webhook-orders', async (req, res) => {
 });
 
 router.post('/webhook-carts', async (req, res) => {
-    const shopify_cart = req.body;
+    try {
+        const shopify_cart = req.body;
 
-    let products_list = [];
-    let item_price = 0.0;
-    let cart_price = 0.0;
-    let discount_title;
+        let products_list = [];
+        let cart_price = 0.0;
+        let discount_title;
 
-    for(let i = 0; i < shopify_cart.line_items.length; i++) {
-        const item = shopify_cart.line_items[i];
-        if(item.properties && item.properties['_Create Order']) {
-            discount_title = `CreateOrderDiscount - ${ item.properties['_Create Order'] }`;
-            products_list.push(item.variant_id);
-            cart_price += parseFloat(item.line_price);
-            // for (const [key, value] of Object.entries(item.properties)) {
-            //     if(key.includes(' Color')) {
-            //         const colors_index = parseInt(value.replace(" Colors", "")) - 1;
-            //         cart_price += parseFloat(item.line_price);
-            //         let quantiy_index = 0;
-
-            //         quantity_split_edges.forEach((edge, index) => {
-            //             if(item.quantity >= edge) quantiy_index = index;
-            //         });
-            //         if(priceTable[quantiy_index][colors_index]) {
-            //             item_price += (priceTable[quantiy_index][colors_index] * item.quantity);
-            //             // discounted_price += (parseFloat(item.line_price) + orderProductPrice * item.quantity) * 0.6;
-            //             products_list.push(item.variant_id);
-            //         }
-            //     }
-            // }
+        for(let i = 0; i < shopify_cart.line_items.length; i++) {
+            const item = shopify_cart.line_items[i];
+            if(item.properties && item.properties['_Create Order']) {
+                discount_title = `CreateOrderDiscount - ${ item.properties['_Create Order'] }`;
+                products_list.push(item.variant_id);
+                cart_price += parseFloat(item.line_price);
+            }
         }
-    }
 
-    const discount_price = 0.0 - cart_price * 0.4;
-    // if(cart_price > discount_price) {
+        const discount_price = 0.0 - cart_price * 0.4;
         const priceRule = await shopify.priceRule.create({
             "title": discount_title,
             "target_type": "line_item",
@@ -152,12 +135,15 @@ router.post('/webhook-carts', async (req, res) => {
             "entitled_variant_ids": products_list,
             "starts_at": shopify_cart.updated_at
         });
-        console.log(priceRule);
         await sleep(1000);
         const discount = await shopify.discountCode.create(priceRule.id, {
             code: discount_title
         });
-    // }
+        console.log(discount);
+    }
+    catch(err) {
+        console.log(err);
+    }    
 
     res.send('ok');
 });
